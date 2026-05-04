@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import userRouter from './user.routes';
 import clientRouter from './client.routes';
 import projectRouter from './project.routes';
+import deliveryNoteRouter from './deliverynote.routes';
 
 const router = Router();
 
@@ -46,8 +47,6 @@ router.get('/health', (_req, res) => {
 router.use('/api/user', userRouter);
 router.use('/api/client', clientRouter);
 router.use('/api/project', projectRouter);
-
-// Stub mounts — will be wired up in subsequent phases
-// router.use('/api/deliverynote', deliveryNoteRouter);
+router.use('/api/deliverynote', deliveryNoteRouter);
 
 export default router;

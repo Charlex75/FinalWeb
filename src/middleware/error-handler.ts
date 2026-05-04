@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
-import { AppError } from '../utils/AppError.js';
-import config from '../config/index.js';
+import { AppError } from '../utils/AppError';
+import config from '../config/index';
 
 async function notifySlack(req: Request, err: Error): Promise<void> {
   // TODO(human): configure Slack Incoming Webhook URL in .env (SLACK_WEBHOOK_URL)

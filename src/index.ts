@@ -1,8 +1,8 @@
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { connectDatabase } from './config/database.js';
-import { createApp } from './app.js';
-import config from './config/index.js';
+import { connectDatabase } from './config/database';
+import { createApp } from './app';
+import config from './config/index';
 
 async function main(): Promise<void> {
   await connectDatabase();

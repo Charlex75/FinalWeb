@@ -1,5 +1,5 @@
 import multer from 'multer';
-import { AppError } from '../utils/AppError.js';
+import { AppError } from '../utils/AppError';
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB

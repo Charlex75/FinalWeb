@@ -4,12 +4,12 @@ import cors from 'cors';
 import helmet from 'helmet';
 import * as swaggerUi from 'swagger-ui-express';
 import type { Server } from 'socket.io';
-import { apiRateLimit } from './middleware/rate-limit.js';
-import { sanitize } from './middleware/sanitize.js';
-import { swaggerSpec } from './config/swagger.js';
-import { errorHandler } from './middleware/error-handler.js';
-import router from './routes/index.js';
-import config from './config/index.js';
+import { apiRateLimit } from './middleware/rate-limit';
+import { sanitize } from './middleware/sanitize';
+import { swaggerSpec } from './config/swagger';
+import { errorHandler } from './middleware/error-handler';
+import router from './routes/index';
+import config from './config/index';
 
 export function createApp(io?: Server): Application {
   const app = express();

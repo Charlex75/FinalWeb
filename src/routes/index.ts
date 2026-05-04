@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import mongoose from 'mongoose';
+import userRouter from './user.routes';
 
 const router = Router();
 
@@ -40,8 +41,9 @@ router.get('/health', (_req, res) => {
   });
 });
 
+router.use('/api/user', userRouter);
+
 // Stub mounts — will be wired up in subsequent phases
-// router.use('/api/user', userRouter);
 // router.use('/api/client', clientRouter);
 // router.use('/api/project', projectRouter);
 // router.use('/api/deliverynote', deliveryNoteRouter);

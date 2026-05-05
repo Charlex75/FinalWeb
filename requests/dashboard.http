@@ -1,0 +1,18 @@
+# BildyApp — Dashboard endpoint
+# Requires VS Code REST Client extension (humao.rest-client)
+
+@base  = http://localhost:3000/api
+@token = <paste_your_token_here>
+
+### Get dashboard summary
+# Returns:
+#   totals          — total counts for clients, projects, delivery notes, signed notes
+#   notesByMonth    — delivery notes per month for the last 12 months (total vs signed)
+#   hoursByProject  — top 10 projects by hours logged
+#   materialsByClient — top 10 clients by number of material notes
+#   recentNotes     — 5 most recently created delivery notes
+GET {{base}}/dashboard
+Authorization: Bearer {{token}}
+
+### Health check (no auth required)
+GET {{base}}/../health

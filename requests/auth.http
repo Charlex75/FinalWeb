@@ -1,0 +1,114 @@
+# BildyApp — User / Auth endpoints
+# Requires VS Code REST Client extension (humao.rest-client)
+
+@base = http://localhost:3000/api/user
+
+### Register a new user
+POST {{base}}/register
+Content-Type: application/json
+
+{
+  "name": "Ana García",
+  "email": "ana@example.com",
+  "password": "Password123"
+}
+
+### Verify email (replace code with the one received by email)
+PUT {{base}}/validation
+Content-Type: application/json
+
+{
+  "email": "ana@example.com",
+  "code": "123456"
+}
+
+### Login
+# @name login
+POST {{base}}/login
+Content-Type: application/json
+
+{
+  "email": "ana@example.com",
+  "password": "Password123"
+}
+
+### Capture tokens from login response
+@accessToken  = {{login.response.body.token}}
+@refreshToken = {{login.response.body.refreshToken}}
+
+### Refresh access token
+POST {{base}}/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### Get authenticated user
+GET {{base}}
+Authorization: Bearer {{accessToken}}
+
+### Update personal data
+PUT {{base}}/register
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Ana García",
+  "surname": "López",
+  "nif": "12345678A",
+  "phone": "600000001"
+}
+
+### Create / update company
+PATCH {{base}}/company
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "García Construcciones S.L.",
+  "cif": "B12345678"
+}
+
+### Upload company logo (multipart — update file path as needed)
+PATCH {{base}}/logo
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="logo"; filename="logo.png"
+Content-Type: image/png
+
+< ./logo.png
+------Boundary--
+
+### Invite a collaborator
+POST {{base}}/invite
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "email": "collaborator@example.com"
+}
+
+### Change password
+PATCH {{base}}/password
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "Password123",
+  "newPassword": "NewPassword456"
+}
+
+### Logout (revoke refresh token)
+POST {{base}}/logout
+Authorization: Bearer {{accessToken}}
+
+### Delete user (soft — archive)
+DELETE {{base}}?soft=true
+Authorization: Bearer {{accessToken}}
+
+### Delete user (hard — permanent)
+# DELETE {{base}}?soft=false
+# Authorization: Bearer {{accessToken}}

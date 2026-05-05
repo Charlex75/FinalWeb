@@ -1,0 +1,69 @@
+# BildyApp — Client endpoints
+# Requires VS Code REST Client extension (humao.rest-client)
+# Set @token to a valid JWT access token obtained from auth.http
+
+@base  = http://localhost:3000/api/client
+@token = <paste_your_token_here>
+
+### Create a client
+# @name createClient
+POST {{base}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "García Construcciones",
+  "cif": "B12345678",
+  "email": "contacto@garcia.com",
+  "phone": "600000001",
+  "address": {
+    "street": "Calle Mayor 1",
+    "city": "Madrid",
+    "postalCode": "28001",
+    "country": "España"
+  }
+}
+
+@clientId = {{createClient.response.body.client._id}}
+
+### List active clients (page 1, limit 10)
+GET {{base}}?page=1&limit=10
+Authorization: Bearer {{token}}
+
+### List active clients — filter by name
+GET {{base}}?name=garcía
+Authorization: Bearer {{token}}
+
+### List active clients — sorted by name descending
+GET {{base}}?sort=-name
+Authorization: Bearer {{token}}
+
+### Get a single client
+GET {{base}}/{{clientId}}
+Authorization: Bearer {{token}}
+
+### Update a client
+PUT {{base}}/{{clientId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "email": "nuevo@garcia.com",
+  "phone": "611000002"
+}
+
+### Archive a client (soft delete)
+DELETE {{base}}/{{clientId}}?soft=true
+Authorization: Bearer {{token}}
+
+### List archived clients
+GET {{base}}/archived?page=1&limit=10
+Authorization: Bearer {{token}}
+
+### Restore an archived client
+PATCH {{base}}/{{clientId}}/restore
+Authorization: Bearer {{token}}
+
+### Hard-delete a client (permanent, use with care)
+# DELETE {{base}}/{{clientId}}?soft=false
+# Authorization: Bearer {{token}}

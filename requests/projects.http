@@ -1,0 +1,70 @@
+# BildyApp — Project endpoints
+# Requires VS Code REST Client extension (humao.rest-client)
+# Set @token and @clientId before running (obtain them from auth.http / clients.http)
+
+@base     = http://localhost:3000/api/project
+@token    = <paste_your_token_here>
+@clientId = <paste_client_id_here>
+
+### Create a project
+# @name createProject
+POST {{base}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Reforma oficina central",
+  "projectCode": "PRJ-001",
+  "client": "{{clientId}}",
+  "email": "obra@garcia.com",
+  "notes": "Acceso por puerta lateral. Horario 8-18h.",
+  "active": true
+}
+
+@projectId = {{createProject.response.body.project._id}}
+
+### List active projects (page 1, limit 10)
+GET {{base}}?page=1&limit=10
+Authorization: Bearer {{token}}
+
+### List projects — filter by client
+GET {{base}}?client={{clientId}}
+Authorization: Bearer {{token}}
+
+### List projects — filter by active status
+GET {{base}}?active=true
+Authorization: Bearer {{token}}
+
+### List projects — filter by name and sort
+GET {{base}}?name=reforma&sort=-createdAt
+Authorization: Bearer {{token}}
+
+### Get a single project (client populated)
+GET {{base}}/{{projectId}}
+Authorization: Bearer {{token}}
+
+### Update a project
+PUT {{base}}/{{projectId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "notes": "Acceso actualizado: puerta principal. Horario 7-19h.",
+  "active": true
+}
+
+### Archive a project (soft delete)
+DELETE {{base}}/{{projectId}}?soft=true
+Authorization: Bearer {{token}}
+
+### List archived projects
+GET {{base}}/archived?page=1&limit=10
+Authorization: Bearer {{token}}
+
+### Restore an archived project
+PATCH {{base}}/{{projectId}}/restore
+Authorization: Bearer {{token}}
+
+### Hard-delete a project (permanent, use with care)
+# DELETE {{base}}/{{projectId}}?soft=false
+# Authorization: Bearer {{token}}

@@ -1,0 +1,105 @@
+# BildyApp — Delivery Note endpoints
+# Requires VS Code REST Client extension (humao.rest-client)
+# Set @token, @clientId and @projectId before running
+
+@base      = http://localhost:3000/api/deliverynote
+@token     = <paste_your_token_here>
+@clientId  = <paste_client_id_here>
+@projectId = <paste_project_id_here>
+
+### Create a delivery note — material format
+# @name createNoteMaterial
+POST {{base}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "project": "{{projectId}}",
+  "client": "{{clientId}}",
+  "format": "material",
+  "description": "Suministro de cemento Portland",
+  "workDate": "2026-05-04",
+  "material": "Cemento Portland CEM II",
+  "quantity": 20,
+  "unit": "sacos"
+}
+
+@noteIdMaterial = {{createNoteMaterial.response.body.deliveryNote._id}}
+
+### Create a delivery note — hours format (with workers)
+# @name createNoteHours
+POST {{base}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "project": "{{projectId}}",
+  "client": "{{clientId}}",
+  "format": "hours",
+  "description": "Trabajos de albañilería",
+  "workDate": "2026-05-04",
+  "workers": [
+    { "name": "Carlos Ruiz", "hours": 8 },
+    { "name": "Pedro Sanz", "hours": 6 }
+  ]
+}
+
+@noteIdHours = {{createNoteHours.response.body.deliveryNote._id}}
+
+### Create a delivery note — hours format (single total)
+POST {{base}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "project": "{{projectId}}",
+  "client": "{{clientId}}",
+  "format": "hours",
+  "description": "Consultoría técnica",
+  "workDate": "2026-05-04",
+  "hours": 4
+}
+
+### List delivery notes (page 1, limit 10)
+GET {{base}}?page=1&limit=10
+Authorization: Bearer {{token}}
+
+### List delivery notes — filter by project
+GET {{base}}?project={{projectId}}
+Authorization: Bearer {{token}}
+
+### List delivery notes — filter by client and format
+GET {{base}}?client={{clientId}}&format=material
+Authorization: Bearer {{token}}
+
+### List delivery notes — filter by signed status
+GET {{base}}?signed=false
+Authorization: Bearer {{token}}
+
+### List delivery notes — filter by date range
+GET {{base}}?from=2026-01-01&to=2026-12-31&sort=-workDate
+Authorization: Bearer {{token}}
+
+### Get a single delivery note (full populate)
+GET {{base}}/{{noteIdMaterial}}
+Authorization: Bearer {{token}}
+
+### Download delivery note as PDF
+GET {{base}}/pdf/{{noteIdMaterial}}
+Authorization: Bearer {{token}}
+
+### Sign a delivery note (multipart — update file path as needed)
+PATCH {{base}}/{{noteIdMaterial}}/sign
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="signature"; filename="signature.png"
+Content-Type: image/png
+
+< ./signature.png
+------Boundary--
+
+### Delete an unsigned delivery note
+DELETE {{base}}/{{noteIdHours}}
+Authorization: Bearer {{token}}

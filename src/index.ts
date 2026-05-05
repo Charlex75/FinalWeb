@@ -2,6 +2,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { connectDatabase } from './config/database';
 import { createApp } from './app';
+import { registerSocketMiddleware } from './middleware/socket.middleware';
 import config from './config/index';
 
 async function main(): Promise<void> {
@@ -14,14 +15,7 @@ async function main(): Promise<void> {
   });
 
   app.set('io', io);
-
-  // TODO(human): add JWT auth middleware for Socket.IO connections (Phase 6)
-  io.on('connection', (socket) => {
-    console.log(`Socket connected: ${socket.id}`);
-    socket.on('disconnect', () => {
-      console.log(`Socket disconnected: ${socket.id}`);
-    });
-  });
+  registerSocketMiddleware(io);
 
   httpServer.listen(config.port, () => {
     console.log(`Server:  http://${config.host}:${config.port}`);

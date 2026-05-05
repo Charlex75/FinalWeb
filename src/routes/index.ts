@@ -4,6 +4,8 @@ import userRouter from './user.routes';
 import clientRouter from './client.routes';
 import projectRouter from './project.routes';
 import deliveryNoteRouter from './deliverynote.routes';
+import { authenticate } from '../middleware/auth.middleware';
+import { getDashboard } from '../controllers/dashboard.controller';
 
 const router = Router();
 
@@ -48,5 +50,33 @@ router.use('/api/user', userRouter);
 router.use('/api/client', clientRouter);
 router.use('/api/project', projectRouter);
 router.use('/api/deliverynote', deliveryNoteRouter);
+
+/**
+ * @openapi
+ * /api/dashboard:
+ *   get:
+ *     summary: Company dashboard (aggregation pipeline)
+ *     tags: [System]
+ *     responses:
+ *       200:
+ *         description: Aggregated stats for the authenticated user's company
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 summary:
+ *                   type: object
+ *                   properties:
+ *                     clients:    { type: integer }
+ *                     projects:   { type: integer }
+ *                     notes:      { type: integer }
+ *                     signedNotes:{ type: integer }
+ *                 notesByMonth:     { type: array }
+ *                 hoursByProject:   { type: array }
+ *                 formatBreakdown:  { type: array }
+ *                 materialsByClient:{ type: array }
+ */
+router.get('/api/dashboard', authenticate, getDashboard);
 
 export default router;

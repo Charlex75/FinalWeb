@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { connectDatabase } from './config/database';

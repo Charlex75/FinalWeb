@@ -265,5 +265,8 @@ export const deleteDeliveryNote = asyncHandler(async (req: Request, res: Respons
   note.deleted = true;
   await note.save();
 
+  const io = req.app.get('io') as { to: (r: string) => { emit: (e: string, d: unknown) => void } } | undefined;
+  io?.to(companyId.toString()).emit('deliverynote:deleted', { id: req.params['id'] });
+
   res.status(200).json({ message: 'Delivery note deleted successfully' });
 });

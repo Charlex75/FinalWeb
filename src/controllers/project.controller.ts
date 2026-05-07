@@ -160,6 +160,9 @@ export const updateProject = asyncHandler(async (req: Request, res: Response) =>
 
   if (!project) throw AppError.notFound('Project not found');
 
+  const io = req.app.get('io') as { to: (r: string) => { emit: (e: string, d: unknown) => void } } | undefined;
+  io?.to(companyId.toString()).emit('project:updated', project);
+
   res.status(200).json({ project });
 });
 
@@ -183,6 +186,9 @@ export const deleteProject = asyncHandler(async (req: Request, res: Response) =>
     await project.deleteOne();
   }
 
+  const io = req.app.get('io') as { to: (r: string) => { emit: (e: string, d: unknown) => void } } | undefined;
+  io?.to(companyId.toString()).emit('project:deleted', { id: req.params['id'], soft });
+
   res.status(200).json({ message: `Project ${soft ? 'archived' : 'deleted'} successfully` });
 });
 
@@ -198,6 +204,9 @@ export const restoreProject = asyncHandler(async (req: Request, res: Response) =
   ).populate('client', 'name cif email');
 
   if (!project) throw AppError.notFound('Archived project not found');
+
+  const io = req.app.get('io') as { to: (r: string) => { emit: (e: string, d: unknown) => void } } | undefined;
+  io?.to(companyId.toString()).emit('project:restored', project);
 
   res.status(200).json({ project });
 });

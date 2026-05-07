@@ -133,6 +133,9 @@ export const updateClient = asyncHandler(async (req: Request, res: Response) => 
   );
   if (!client) throw AppError.notFound('Client not found');
 
+  const io = req.app.get('io') as { to: (room: string) => { emit: (ev: string, data: unknown) => void } } | undefined;
+  io?.to(companyId.toString()).emit('client:updated', client);
+
   res.status(200).json({ client });
 });
 
@@ -156,6 +159,9 @@ export const deleteClient = asyncHandler(async (req: Request, res: Response) => 
     await client.deleteOne();
   }
 
+  const io = req.app.get('io') as { to: (room: string) => { emit: (ev: string, data: unknown) => void } } | undefined;
+  io?.to(companyId.toString()).emit('client:deleted', { id: req.params['id'], soft });
+
   res.status(200).json({ message: `Client ${soft ? 'archived' : 'deleted'} successfully` });
 });
 
@@ -170,6 +176,9 @@ export const restoreClient = asyncHandler(async (req: Request, res: Response) =>
     { new: true },
   );
   if (!client) throw AppError.notFound('Archived client not found');
+
+  const io = req.app.get('io') as { to: (room: string) => { emit: (ev: string, data: unknown) => void } } | undefined;
+  io?.to(companyId.toString()).emit('client:restored', client);
 
   res.status(200).json({ client });
 });

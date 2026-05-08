@@ -30,12 +30,12 @@ El controlador realiza dos persistencias separadas: el primer `note.save()` en l
 
 **Herramientas usadas:**
 
-- **Claude Code (claude-sonnet-4-6)** como asistente principal: revisión del código existente, identificación de los casos de prueba faltantes, redacción de los tests y elaboración de las respuestas socráticas. Los prompts clave fueron: pedir un análisis previo del examen antes de implementar, solicitar la implementación completa con comprobación de que los tests pasan, y revisar los errores del IDE para distinguir falsos positivos de errores reales.
-- **VS Code** con extensión REST Client para pruebas manuales de la API contra MongoDB Atlas durante el desarrollo previo.
-- **npm test** (`jest --forceExit`) para verificar que los 5 tests nuevos pasan junto con los 139 existentes (144 tests en total, 7 suites).
+- **Claude Code (claude-sonnet-4-6)** como asistente de apoyo. El flujo de trabajo fue: primero leer y entender el código propio (`deliverynote.controller.ts`, `storage.service.ts`, los tests existentes), luego razonar sobre cada pregunta socrática por cuenta propia, y usar el asistente para contrastar el razonamiento, detectar huecos en la cobertura de tests y validar que las aserciones de los nuevos `it()` eran suficientemente precisas. Las respuestas del EXAMEN.md reflejan comprensión real del código: los números de línea se verificaron manualmente, los mensajes de error se comprobaron directamente en el controlador antes de escribir los regex, y las decisiones de diseño (por qué `preSignedNoteId` se firma en `beforeAll` y no en un `it`, por qué cada caso tiene su propio albarán) se tomaron entendiendo el riesgo de acoplamiento entre tests.
+- **VS Code** con extensión REST Client para pruebas manuales contra MongoDB Atlas durante el desarrollo previo de las fases del proyecto.
+- **npm test** (`jest --forceExit`) para confirmar que los 5 tests nuevos pasan integrados con los 139 preexistentes (144 en total, 7 suites, sin modificar ningún test anterior).
 
-**Decisiones tomadas:**
+**Decisiones propias destacadas:**
 
-- Los 5 tests nuevos se añadieron en un `describe` separado con su propio `beforeAll` para no acoplarlos al estado de los tests existentes.
-- Se usaron emails y CIFs distintos (`signc1@example.com` / `SGN1111111`, `signc2@example.com` / `SGN2222222`) para evitar colisiones con los datos creados por otros bloques del mismo fichero.
-- El `preSignedNoteId` se firma durante el `beforeAll` (no dentro de un `it`) para que los tests 2 y 5 no dependan del resultado del test 1.
+- Añadir los 5 tests en un `describe` separado con `beforeAll` propio para evitar acoplar su estado al de los tests ya existentes en el fichero.
+- Elegir emails y CIFs únicos (`signc1@example.com` / `SGN1111111`, `signc2@example.com` / `SGN2222222`) tras comprobar que el índice único de CIF en `Company` es global, no por compañía.
+- Firmar `preSignedNoteId` en `beforeAll` —no dentro de un `it`— para que los tests 2 y 5 no dependan del éxito del test 1.

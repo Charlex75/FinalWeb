@@ -352,4 +352,99 @@ describe('DeliveryNote module', () => {
       expect(res.body.message).toMatch(/signed/i);
     });
   });
+
+  // ─── PATCH /:id/sign – contrato completo (5 nuevos tests) ────────────────
+
+  describe('PATCH /:id/sign – contrato completo', () => {
+    let tok: string;
+    let tok2: string;
+    let cliId: string;
+    let projId: string;
+    let freshNoteId: string;      // unsigned – para test de firma exitosa
+    let noFileNoteId: string;     // unsigned – para test sin fichero
+    let otherCompNoteId: string;  // unsigned – para test multi-tenant
+    let preSignedNoteId: string;  // pre-firmado en beforeAll – para tests 2 y 5
+    let sigBuf: Buffer;
+
+    beforeAll(async () => {
+      tok  = await setupUserWithCompany('signc1@example.com', 'SGN1111111');
+      tok2 = await setupUserWithCompany('signc2@example.com', 'SGN2222222');
+
+      cliId  = await createClient(tok, 'Sign Client', 'SGNCLI0001');
+      projId = await createProject(tok, 'Sign Project', 'SIGN-001', cliId);
+
+      sigBuf = await sharp({
+        create: { width: 100, height: 40, channels: 3, background: { r: 0, g: 0, b: 0 } },
+      }).jpeg({ quality: 80 }).toBuffer();
+
+      const makeNote = async (desc: string): Promise<string> => {
+        const r = await request(app).post(BASE)
+          .set('Authorization', `Bearer ${tok}`)
+          .send({ project: projId, client: cliId, format: 'hours', description: desc, workDate: '2025-04-01', hours: 4 });
+        return r.body.deliveryNote._id as string;
+      };
+
+      freshNoteId     = await makeNote('Para firma exitosa');
+      noFileNoteId    = await makeNote('Para prueba sin fichero');
+      otherCompNoteId = await makeNote('Para prueba multi-tenant');
+      preSignedNoteId = await makeNote('Pre-firmado en setup');
+
+      await request(app)
+        .patch(`${BASE}/${preSignedNoteId}/sign`)
+        .set('Authorization', `Bearer ${tok}`)
+        .attach('signature', sigBuf, { filename: 'sig.jpg', contentType: 'image/jpeg' });
+    });
+
+    it('firma exitosa devuelve 200 y persiste signatureUrl y pdfUrl en el documento', async () => {
+      const res = await request(app)
+        .patch(`${BASE}/${freshNoteId}/sign`)
+        .set('Authorization', `Bearer ${tok}`)
+        .attach('signature', sigBuf, { filename: 'sig.jpg', contentType: 'image/jpeg' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.deliveryNote.signed).toBe(true);
+      expect(res.body.deliveryNote.signedAt).toBeDefined();
+      expect(typeof res.body.deliveryNote.signatureUrl).toBe('string');
+      expect(res.body.deliveryNote.signatureUrl.length).toBeGreaterThan(0);
+      expect(typeof res.body.deliveryNote.pdfUrl).toBe('string');
+      expect(res.body.deliveryNote.pdfUrl.length).toBeGreaterThan(0);
+    });
+
+    it('rechaza firmar un albarán ya firmado con 400 y mensaje "already signed"', async () => {
+      const res = await request(app)
+        .patch(`${BASE}/${preSignedNoteId}/sign`)
+        .set('Authorization', `Bearer ${tok}`)
+        .attach('signature', sigBuf, { filename: 'sig.jpg', contentType: 'image/jpeg' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toMatch(/already signed/i);
+    });
+
+    it('rechaza la petición sin fichero adjunto con 400 y mensaje "Signature image is required"', async () => {
+      const res = await request(app)
+        .patch(`${BASE}/${noFileNoteId}/sign`)
+        .set('Authorization', `Bearer ${tok}`);
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toMatch(/signature image is required/i);
+    });
+
+    it('un usuario de otra compañía recibe 404 al intentar firmar un albarán ajeno (filtro multi-tenant)', async () => {
+      const res = await request(app)
+        .patch(`${BASE}/${otherCompNoteId}/sign`)
+        .set('Authorization', `Bearer ${tok2}`)
+        .attach('signature', sigBuf, { filename: 'sig.jpg', contentType: 'image/jpeg' });
+
+      expect(res.status).toBe(404);
+    });
+
+    it('tras firmar, DELETE sobre el mismo albarán devuelve 400 con "Signed delivery notes cannot be deleted"', async () => {
+      const res = await request(app)
+        .delete(`${BASE}/${preSignedNoteId}`)
+        .set('Authorization', `Bearer ${tok}`);
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toMatch(/signed/i);
+    });
+  });
 });
